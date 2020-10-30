@@ -20,8 +20,7 @@
                 autofocus
                 v-model="name"
                 @keypress="onEnterKeyPress"
-                :rules="[rules.required]"
-                validate-on-blur
+                :error-messages="error"
               />
             </v-col>
           </v-row>
@@ -43,19 +42,28 @@
 <script>
 export default {
   name: 'FolderAddDialog',
+
   props: {
     onSubmit: Function,
     parentName: String,
   },
+
   data() {
     return {
       isOpen: false,
       name: '',
-      rules: {
-        required: value => !!value.trim() || 'Value cannot be empty',
-      },
+      error: '',
     };
   },
+
+  watch: {
+    name(val) {
+      if (this.isNameValid(val)) {
+        return this.resetError();
+      }
+    },
+  },
+
   methods: {
     onClose() {
       this.isOpen = false;
@@ -69,13 +77,28 @@ export default {
     },
 
     onSubmitForm() {
-      const trimmedName = this.name.trim();
-      if (!trimmedName) {
-        return;
+      if (!this.isNameValid(this.name)) {
+        return this.setError();
       }
-      this.onSubmit(this.name);
+      this.onSubmit(this.name.trim());
+      this.resetName();
+      this.onClose();
+    },
+
+    resetName() {
       this.name = '';
-      this.isOpen = false;
+    },
+
+    isNameValid(name) {
+      return !!name.trim();
+    },
+
+    setError() {
+      this.error = 'Value cannot be empty';
+    },
+
+    resetError() {
+      this.error = '';
     },
   },
 };
